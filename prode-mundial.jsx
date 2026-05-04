@@ -688,12 +688,4 @@ export default function App(){
   );
 
   return <div style={{...WRAP,alignItems:"center"}}><div style={{...CARD,maxWidth:260,textAlign:"center"}}><p style={{color:K.mu}}>Cargando…</p></div></div>;
-
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <ProdeMundial /> 
-    </React.StrictMode>
-  )
 }
