@@ -403,12 +403,12 @@ export default function App(){
 
   useEffect(()=>{loadAll();},[loadAll]);
 
-  // En desktop, arrancar con scroll abajo para mostrar los botones
+  // En desktop, scroll abajo cuando termina de cargar (loading=false)
   useEffect(()=>{
-    if(sc==="splash" && window.innerWidth > 600){
-      setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"instant"}),50);
+    if(sc==="splash" && !loading && window.innerWidth > 600){
+      setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"instant"}),80);
     }
-  },[sc]);
+  },[sc, loading]);
   useEffect(()=>{if(user)setLp(preds[user.name]||{});},[user?.name]);
 
   const saveU=async u2=>{await ST.set("Usuarios",u2);setUsers(u2);};
@@ -512,8 +512,9 @@ export default function App(){
   );
 
   if(sc==="splash")return(
-    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0,margin:0}}>
-      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0,margin:0,padding:0,lineHeight:0}}>
+    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0,margin:0,minHeight:"100dvh"}}>
+      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0,margin:0,padding:0,lineHeight:0,
+        marginTop:"env(safe-area-inset-top,0px)" }}>
         <img src={`data:image/jpeg;base64,${PROMO_B64}`} alt="" style={{width:"100%",objectFit:"cover",objectPosition:"center top",display:"block",maxHeight:"65vh",verticalAlign:"top"}}/>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(6,9,26,0) 35%,rgba(6,9,26,1) 100%)"}}/>
       </div>
