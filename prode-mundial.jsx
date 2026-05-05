@@ -396,7 +396,7 @@ export default function App(){
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
-    const [u,p,r,c]=await Promise.all([ST.get("usuarios"),ST.get("Pronosticos"),ST.get("resultados"),ST.get("clasificados")]);
+    const [u,p,r,c]=await Promise.all([ST.get("Usuarios"),ST.get("Pronosticos"),ST.get("Resultados"),ST.get("Clasificados")]);
     setUsers(u||{});setPreds(p||{});setRes(r||{});setLr(r||{});setCl(c||{});setLcl(c||{});
     setLoading(false);
   },[]);
@@ -404,24 +404,29 @@ export default function App(){
   useEffect(()=>{loadAll();},[loadAll]);
   useEffect(()=>{if(user)setLp(preds[user.name]||{});},[user?.name]);
 
-  const saveU=async u2=>{await ST.set("usuarios",u2);setUsers(u2);};
+  const saveU=async u2=>{await ST.set("Usuarios",u2);setUsers(u2);};
 
   const doName=async()=>{
     setFErr("");const n=fN.trim();
     if(!n)return setFErr("Ingresá tu nombre");
-    const latest=await ST.get("usuarios")||{};
+    // Cargar estado más reciente de Sheets
+    const latest=await ST.get("Usuarios")||{};
     setUsers(latest);
     if(latest[n]){setSc("pin");}
     else{
+      // Usuario nuevo — crear y guardar inmediatamente
       const nu={...latest,[n]:{name:n,pin:"2026",first:false,ts:Date.now()}};
-      await ST.set("usuarios",nu);setUsers(nu);setUser(nu[n]);
-      const p=await ST.get("Pronosticos")||{};setLp(p[n]||{});
+      await ST.set("Usuarios",nu);
+      setUsers(nu);
+      setUser(nu[n]);
+      const p=await ST.get("Pronosticos")||{};
+      setLp(p[n]||{});
       setSc("prode");
     }
   };
   const doPin=async()=>{
     setFErr("");
-    const latest=await ST.get("usuarios")||{};
+    const latest=await ST.get("Usuarios")||{};
     const u=latest[fN.trim()];
     if(!u||fP!==u.pin)return setFErr("PIN incorrecto");
     setUser(u);const p=await ST.get("Pronosticos")||{};setLp(p[u.name]||{});
@@ -445,8 +450,8 @@ export default function App(){
     const np={...latest,[user.name]:lp};
     await ST.set("Pronosticos",np);setPreds(np);flash("¡Guardado! 🎉");setBusy(false);
   };
-  const saveRes=async()=>{setBusy(true);await ST.set("resultados",lr);setRes(lr);flash("Resultados guardados ✅");setBusy(false);};
-  const saveCl=async()=>{setBusy(true);await ST.set("clasificados",lcl);setCl(lcl);flash("Clasificados guardados ✅");setBusy(false);};
+  const saveRes=async()=>{setBusy(true);await ST.set("Resultados",lr);setRes(lr);flash("Resultados guardados ✅");setBusy(false);};
+  const saveCl=async()=>{setBusy(true);await ST.set("Clasificados",lcl);setCl(lcl);flash("Clasificados guardados ✅");setBusy(false);};
 
   const fetchFifa=async()=>{
     setBusy(true);
@@ -457,7 +462,7 @@ export default function App(){
       const d=await r.json();
       const tx=(d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").replace(/```json|```/g,"").trim();
       const m=tx.match(/\[[\s\S]*?\]/);
-      if(m){const arr=JSON.parse(m[0]);if(arr.length){const nv={...lr};arr.forEach(x=>{const p=PG.find(p=>p.local===x.local&&p.visitante===x.visitante);if(p)nv[p.id]={l:String(x.gl),v:String(x.gv)};});setLr(nv);await ST.set("resultados",nv);setRes(nv);flash(`${arr.length} resultado(s) ✅`);}else flash("Sin nuevos resultados");}
+      if(m){const arr=JSON.parse(m[0]);if(arr.length){const nv={...lr};arr.forEach(x=>{const p=PG.find(p=>p.local===x.local&&p.visitante===x.visitante);if(p)nv[p.id]={l:String(x.gl),v:String(x.gv)};});setLr(nv);await ST.set("Resultados",nv);setRes(nv);flash(`${arr.length} resultado(s) ✅`);}else flash("Sin nuevos resultados");}
     }catch(e){flash("Error de conexión");}
     setBusy(false);
   };
@@ -466,7 +471,7 @@ export default function App(){
     if(!window.confirm(`⚠️ ¿Eliminar a "${name}"?\nSe borran todos sus pronósticos.\nEsta acción no se puede deshacer.`))return;
     const nu={...users};delete nu[name];
     const np={...preds};delete np[name];
-    await ST.set("usuarios",nu);await ST.set("Pronosticos",np);
+    await ST.set("Usuarios",nu);await ST.set("Pronosticos",np);
     setUsers(nu);setPreds(np);flash(`"${name}" eliminado`);
   };
 
@@ -477,7 +482,7 @@ export default function App(){
     const merged={...pB,...pA};
     const nu={...users};delete nu[mergeB];
     const np={...preds};delete np[mergeB];np[mergeA]=merged;
-    await ST.set("usuarios",nu);await ST.set("Pronosticos",np);
+    await ST.set("Usuarios",nu);await ST.set("Pronosticos",np);
     setUsers(nu);setPreds(np);setMergeMode(false);setMergeA("");setMergeB("");
     flash(`Fusionados en "${mergeA}" ✅`);
   };
@@ -500,16 +505,16 @@ export default function App(){
   );
 
   if(sc==="splash")return(
-    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0}}>
-      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0}}>
-        <img src={`data:image/jpeg;base64,${PROMO_B64}`} alt="" style={{width:"100%",objectFit:"cover",objectPosition:"center top",display:"block",maxHeight:"70vh"}}/>
+    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0,margin:0}}>
+      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0,margin:0,padding:0,lineHeight:0}}>
+        <img src={`data:image/jpeg;base64,${PROMO_B64}`} alt="" style={{width:"100%",objectFit:"cover",objectPosition:"center top",display:"block",maxHeight:"65vh",verticalAlign:"top"}}/>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(6,9,26,0) 35%,rgba(6,9,26,1) 100%)"}}/>
       </div>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"0 20px",marginTop:-70,zIndex:2,width:"100%",maxWidth:420,margin:"-70px auto 0",boxSizing:"border-box"}}>
         <img src={`data:image/webp;base64,${LOGO_B64}`} alt="Bachi Prode 2026"
-          style={{width:"min(320px,78vw)",filter:"drop-shadow(0 3px 18px rgba(0,0,0,0.75))"}}/>
-        <p style={{color:"#9ca3af",fontSize:12,margin:"10px 0 2px",textAlign:"center"}}>🇺🇸 🇲🇽 🇨🇦 · 11 Jun – 19 Jul 2026</p>
-        <p style={{color:"#6b7280",fontSize:11,margin:"0 0 18px",textAlign:"center"}}>48 equipos · 104 partidos · Base compartida 🌐</p>
+          style={{width:"min(260px,72vw)",filter:"drop-shadow(0 3px 18px rgba(0,0,0,0.75))"}}/>
+        <p style={{color:"#9ca3af",fontSize:11,margin:"6px 0 1px",textAlign:"center"}}>🇺🇸 🇲🇽 🇨🇦 · 11 Jun – 19 Jul 2026</p>
+        <p style={{color:"#6b7280",fontSize:10,margin:"0 0 12px",textAlign:"center"}}>48 equipos · 104 partidos · Base compartida 🌐</p>
         {loading?<p style={{color:"#6b7280"}}>Cargando…</p>:(
           <div style={{display:"flex",flexDirection:"column",gap:9,width:"100%",maxWidth:320}}>
             <p style={{color:"#22c55e",fontSize:11,margin:"0 0 4px",textAlign:"center"}}>✅ {Object.keys(users).length} jugadores registrados</p>
