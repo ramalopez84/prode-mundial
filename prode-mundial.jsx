@@ -64,13 +64,21 @@ function parseSheetData(hoja, rows) {
     data.forEach(r => {
       if(!r[0])return;
       if(!obj[r[0]])obj[r[0]]={};
-      obj[r[0]][Number(r[1])]={l:String(r[2]||""),v:String(r[3]||"")};
+      // Usar ?? en vez de || para que el 0 no se pierda (0||"" = "" es bug)
+      const gl = r[2]!=null && r[2]!=="" ? String(r[2]) : "";
+      const gv = r[3]!=null && r[3]!=="" ? String(r[3]) : "";
+      obj[r[0]][Number(r[1])]={l:gl,v:gv};
     });
     return Object.keys(obj).length ? obj : null;
   }
   if (hoja === "Resultados") {
     const obj = {};
-    data.forEach(r => { if(r[0]!=="")obj[Number(r[0])]={l:String(r[1]||""),v:String(r[2]||"")}; });
+    data.forEach(r => {
+      if(r[0]==="")return;
+      const gl = r[1]!=null && r[1]!=="" ? String(r[1]) : "";
+      const gv = r[2]!=null && r[2]!=="" ? String(r[2]) : "";
+      obj[Number(r[0])]={l:gl,v:gv};
+    });
     return Object.keys(obj).length ? obj : null;
   }
   if (hoja === "Clasificados") {
@@ -272,6 +280,47 @@ const PO=[
 
 const ALL=[...PG,...PO];
 const PO_TABS=["R32","R16","CF","SF","F"];
+
+// Mapeo label → id de partido
+const LABEL_TO_ID = {};
+PO.forEach(p=>{ LABEL_TO_ID[p.label]=p.id; });
+
+// Dado un partido y el estado de clasificados, devuelve los equipos disponibles para ese slot
+// Para R32: equipos de los grupos correspondientes (lD/vD como "1°A", "2°B", "Mej.3°")
+// Para fases siguientes: ganadores/perdedores de partidos anteriores ya cargados en cl
+function getAvailableTeams(p, slot, cl) {
+  const desc = slot==="local" ? p.lD : p.vD;
+  if (!desc) return TEAMS;
+
+  // R32: desc es tipo "1°A", "2°B", "Mej.3°" → equipos de ese grupo
+  if (p.fase === "R32") {
+    const m = desc.match(/^([12°]+)([A-L])$/);
+    if (m) {
+      // Retornar equipos del grupo correspondiente
+      return PG.filter(x=>x.grupo===m[2]).map(x=>[x.local,x.visitante]).flat().filter((v,i,a)=>a.indexOf(v)===i);
+    }
+    // "Mej.3°" → cualquier equipo (son los mejores 3ros, no sabemos de qué grupo)
+    return TEAMS;
+  }
+
+  // R16, CF, SF, F: desc es tipo "G.M74", "G.CF1", "Perd.SF1"
+  // Buscar el partido padre y ver qué equipo ganó/perdió
+  const mG = desc.match(/^G\.(.+)$/);
+  const mP = desc.match(/^Perd\.(.+)$/);
+  const ref = mG ? mG[1] : mP ? mP[1] : null;
+  if (!ref) return TEAMS;
+
+  // Buscar el partido con ese label
+  const parentP = PO.find(x=>x.label===ref);
+  if (!parentP) return TEAMS;
+
+  // Ver qué equipos están cargados en ese partido
+  const parentCl = cl[parentP.id];
+  const opts = [];
+  if (parentCl?.local) opts.push(parentCl.local);
+  if (parentCl?.visitante) opts.push(parentCl.visitante);
+  return opts.length > 0 ? opts : TEAMS;
+}
 const SALUDOS=[
   n=>`¡Hola ${n}! ¿Otra vez por aquí? 🤔`,
   n=>`¿Te sentís de suerte, ${n}? 😉`,
@@ -817,7 +866,7 @@ export default function App(){
                         <p style={{color:"#6b7280",fontSize:10,margin:"0 0 3px"}}>{t==="local"?`Local (${p.lD})`:`Visitante (${p.vD})`}</p>
                         <select value={lcl[p.id]?.[t]||""} onChange={e=>chLcl(p.id,t,e.target.value)} style={{...IN,fontSize:12,padding:"6px 8px"}}>
                           <option value="">— Por definir —</option>
-                          {TEAMS.map(eq=><option key={eq} value={eq}>{FL[eq]||""} {eq}</option>)}
+                          {getAvailableTeams(p,t,lcl).map(eq=><option key={eq} value={eq}>{FL[eq]||""} {eq}</option>)}
                         </select>
                       </div>
                     ))}
