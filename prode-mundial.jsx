@@ -765,8 +765,12 @@ const saveCl = async () => {
   );
 
   return <div style={{...WRAP,alignItems:"center"}}><div style={{...CARD,maxWidth:260,textAlign:"center"}}><p style={{color:K.mu}}>Cargando…</p></div></div>;
-}
 
+<footer className="w-full py-4 text-center text-xs text-gray-500 mt-auto">
+  Copyright © 2026 Bachiprode SACSADAIFCE. Todos los derechos reservados.
+</footer>
+}
+  
 const rootElement = document.getElementById('root');
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
