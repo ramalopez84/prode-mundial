@@ -86,6 +86,11 @@ function parseSheetData(hoja, rows) {
     data.forEach(r => { if(r[0]!=="")obj[Number(r[0])]={local:String(r[1]||""),visitante:String(r[2]||"")}; });
     return Object.keys(obj).length ? obj : null;
   }
+  if (hoja === "Config") {
+    const obj = {};
+    data.forEach(r => { if(r[0])obj[r[0]]=r[1]==="true"||r[1]===true; });
+    return Object.keys(obj).length ? obj : null;
+  }
   return null;
 }
 
@@ -117,6 +122,11 @@ function serializeToRows(hoja, v) {
     Object.entries(v||{}).forEach(([pid,val]) => {
       rows.push([Number(pid), val.local||"", val.visitante||""]);
     });
+    return rows;
+  }
+  if (hoja === "Config") {
+    const rows = [["clave","valor"]];
+    Object.entries(v||{}).forEach(([k,val])=>rows.push([k,String(val)]));
     return rows;
   }
   return null;
@@ -421,6 +431,7 @@ export default function App(){
   const [cl,setCl]=useState({});
   const [lcl,setLcl]=useState({});
   const [busy,setBusy]=useState(false);
+  const [inscCerradas,setInscCerradas]=useState(false);
   const [msg,setMsg]=useState("");
   const [loading,setLoading]=useState(true);
   const [eU,setEU]=useState(null);
@@ -445,8 +456,9 @@ export default function App(){
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
-    const [u,p,r,c]=await Promise.all([ST.get("Usuarios"),ST.get("Pronosticos"),ST.get("Resultados"),ST.get("Clasificados")]);
-    setUsers(u||{});setPreds(p||{});setRes(r||{});setLr(r||{});setCl(c||{});setLcl(c||{});
+    const [u,p,r,cl2,cfg]=await Promise.all([ST.get("Usuarios"),ST.get("Pronosticos"),ST.get("Resultados"),ST.get("Clasificados"),ST.get("Config")]);
+    setUsers(u||{});setPreds(p||{});setRes(r||{});setLr(r||{});setCl(cl2||{});setLcl(cl2||{});
+    setInscCerradas(!!(cfg?.inscripcionesCerradas));
     setLoading(false);
   },[]);
 
@@ -470,6 +482,9 @@ export default function App(){
     setUsers(latest);
     if(latest[n]){setSc("pin");}
     else{
+      // Verificar inscripciones
+      const cfg2=await ST.get("Config")||{};
+      if(cfg2.inscripcionesCerradas) return setFErr("¡Ups, tarde piaste! 🫣 Las inscripciones están cerradas.");
       // Usuario nuevo — crear y guardar inmediatamente
       const nu={...latest,[n]:{name:n,pin:"2026",first:false,ts:Date.now()}};
       await ST.set("Usuarios",nu);
@@ -709,15 +724,15 @@ export default function App(){
                   <div style={{fontSize:10,color:"#6b7280"}}>{u.co}/{ALL.length} pronósticos</div>
                 </div>
                 <div style={{display:"flex",gap:9,alignItems:"center"}}>
-                  <span style={{color:"#22c55e",fontSize:10}}>✓{u.ex}</span>
-                  <span style={{color:"#f0b429",fontSize:10}}>⚽{u.pa}</span>
+                  <span style={{color:"#f0b429",fontSize:10}}>⚽{u.ex}</span>
+                  <span style={{color:"#22c55e",fontSize:10}}>✓{u.pa}</span>
                   <span style={{background:i===0?"linear-gradient(135deg,#f0b429,#d97706)":"rgba(255,255,255,0.08)",borderRadius:8,padding:"3px 9px",fontWeight:900,color:"#fff",fontSize:15}}>{u.pts}</span>
                 </div>
               </div>
             ))}
           </div>
         )}
-        <p style={{marginTop:12,color:"#6b7280",fontSize:10,padding:"8px",background:"rgba(255,255,255,0.02)",borderRadius:8}}>Exacto = 3pts · Ganador/empate correcto = 1pt</p>
+        <p style={{marginTop:12,color:"#6b7280",fontSize:10,padding:"8px",background:"rgba(255,255,255,0.02)",borderRadius:8}}>⚽ Exacto = 3pts · ✓ Ganador/empate correcto = 1pt</p>
       </div>
       {CR}
     </div>
@@ -754,10 +769,20 @@ export default function App(){
 
         {atab==="usuarios"&&(
           <div>
-            <div style={{display:"flex",gap:7,marginBottom:10,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:7,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
               <Btn sm ch="+ Agregar" onClick={()=>{setAddMode(m=>!m);setMergeMode(false);}}/>
               <Btn sm v="s" ch="⇄ Fusionar" onClick={()=>{setMergeMode(m=>!m);setAddMode(false);}}/>
-
+              <button onClick={async()=>{
+                const nuevo=!inscCerradas;
+                setInscCerradas(nuevo);
+                await ST.set("Config",{inscripcionesCerradas:nuevo});
+                flash(nuevo?"🔒 Inscripciones cerradas":"🔓 Inscripciones abiertas");
+              }} style={{
+                background:inscCerradas?"#ef444422":"#22c55e22",
+                border:`1px solid ${inscCerradas?"#ef4444":"#22c55e"}`,
+                borderRadius:8,color:inscCerradas?"#ef4444":"#22c55e",
+                padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"
+              }}>{inscCerradas?"🔒 Inscripciones cerradas":"🔓 Inscripciones abiertas"}</button>
             </div>
             {addMode&&(
               <div style={{background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"12px",border:"1px solid #f0b42955",marginBottom:10}}>
