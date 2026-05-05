@@ -402,6 +402,13 @@ export default function App(){
   },[]);
 
   useEffect(()=>{loadAll();},[loadAll]);
+
+  // En desktop, arrancar con scroll abajo para mostrar los botones
+  useEffect(()=>{
+    if(sc==="splash" && window.innerWidth > 600){
+      setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"instant"}),50);
+    }
+  },[sc]);
   useEffect(()=>{if(user)setLp(preds[user.name]||{});},[user?.name]);
 
   const saveU=async u2=>{await ST.set("Usuarios",u2);setUsers(u2);};
