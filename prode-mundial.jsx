@@ -432,6 +432,10 @@ export default function App(){
   const [lcl,setLcl]=useState({});
   const [busy,setBusy]=useState(false);
   const [inscCerradas,setInscCerradas]=useState(false);
+  const [adminPin,setAdminPin]=useState("2026");
+  const [showChAdmPin,setShowChAdmPin]=useState(false);
+  const [newAdmPin,setNewAdmPin]=useState("");
+  const [newAdmPin2,setNewAdmPin2]=useState("");
   const [msg,setMsg]=useState("");
   const [loading,setLoading]=useState(true);
   const [eU,setEU]=useState(null);
@@ -459,6 +463,7 @@ export default function App(){
     const [u,p,r,cl2,cfg]=await Promise.all([ST.get("Usuarios"),ST.get("Pronosticos"),ST.get("Resultados"),ST.get("Clasificados"),ST.get("Config")]);
     setUsers(u||{});setPreds(p||{});setRes(r||{});setLr(r||{});setCl(cl2||{});setLcl(cl2||{});
     setInscCerradas(!!(cfg?.inscripcionesCerradas));
+    if(cfg?.adminPin) setAdminPin(cfg.adminPin);
     setLoading(false);
   },[]);
 
@@ -640,10 +645,17 @@ export default function App(){
       <h2 style={{color:"#fff",fontWeight:900,fontSize:17,textAlign:"center",marginBottom:14}}>Cambiar PIN</h2>
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
         <div><p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Nuevo PIN</p>
-          <input type="password" inputMode="numeric" maxLength={4} autoFocus value={fP2} onChange={e=>setFP2(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6}}/>
+          <input inputMode="numeric" maxLength={4} autoFocus value={fP2}
+            onChange={e=>setFP2(e.target.value.replace(/\D/g,"").slice(0,4))}
+            placeholder="• • • •"
+            style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6,WebkitTextSecurity:"disc"}}/>
         </div>
         <div><p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Repetí el PIN</p>
-          <input type="password" inputMode="numeric" maxLength={4} value={fP3} onChange={e=>setFP3(e.target.value.replace(/\D/g,"").slice(0,4))} onKeyDown={e=>e.key==="Enter"&&doChPin()} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6}}/>
+          <input inputMode="numeric" maxLength={4} value={fP3}
+            onChange={e=>setFP3(e.target.value.replace(/\D/g,"").slice(0,4))}
+            onKeyDown={e=>e.key==="Enter"&&doChPin()}
+            placeholder="• • • •"
+            style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6,WebkitTextSecurity:"disc"}}/>
         </div>
         {fErr&&<p style={{color:"#ef4444",fontSize:13,margin:0}}>{fErr}</p>}
         <Btn v="g" onClick={doChPin} ch="Guardar PIN →" disabled={fP2.length<4||fP3.length<4}/>
@@ -747,8 +759,8 @@ export default function App(){
           <h2 style={{color:"#fff",fontWeight:900,fontSize:17,marginBottom:4}}>¿Sos vos, Bachi? 🤨</h2>
           <p style={{color:"#6b7280",fontSize:12,marginBottom:14}}>Demostralo con el PIN secreto…</p>
           <div style={{display:"flex",flexDirection:"column",gap:9}}>
-            <input type="password" inputMode="numeric" maxLength={4} autoFocus value={fAdm} onChange={e=>setFAdm(e.target.value.replace(/\D/g,"").slice(0,4))} onKeyDown={e=>{if(e.key==="Enter"){if(fAdm==="2026"){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}}} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:22,letterSpacing:8}}/>
-            <Btn onClick={()=>{if(fAdm==="2026"){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}} ch="Soy yo, dejame entrar 🚪" disabled={fAdm.length<4}/>
+            <input type="password" inputMode="numeric" maxLength={4} autoFocus value={fAdm} onChange={e=>setFAdm(e.target.value.replace(/\D/g,"").slice(0,4))} onKeyDown={e=>{if(e.key==="Enter"){if(fAdm===adminPin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}}} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:22,letterSpacing:8}}/>
+            <Btn onClick={()=>{if(fAdm===adminPin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}} ch="Soy yo, dejame entrar 🚪" disabled={fAdm.length<4}/>
           </div>
           {msg&&<p style={{color:"#ef4444",marginTop:10,fontSize:13}}>{msg}</p>}
         </div>
@@ -775,7 +787,8 @@ export default function App(){
               <button onClick={async()=>{
                 const nuevo=!inscCerradas;
                 setInscCerradas(nuevo);
-                await ST.set("Config",{inscripcionesCerradas:nuevo});
+                const cfgActual=await ST.get("Config")||{};
+                await ST.set("Config",{...cfgActual,inscripcionesCerradas:nuevo});
                 flash(nuevo?"🔒 Inscripciones cerradas":"🔓 Inscripciones abiertas");
               }} style={{
                 background:inscCerradas?"#ef444422":"#22c55e22",
@@ -824,6 +837,42 @@ export default function App(){
                   <Btn sm v="s" ch="Cancelar" onClick={()=>setMergeMode(false)}/>
                 </div>
               </div>
+            )}
+            {showChAdmPin?(
+              <div style={{background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"12px",border:"1px solid #f0b42955",marginBottom:10}}>
+                <p style={{color:"#f0b429",fontSize:12,fontWeight:700,margin:"0 0 8px"}}>🔑 Cambiar PIN de Administrador</p>
+                <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                  <div>
+                    <p style={{color:"#6b7280",fontSize:10,margin:"0 0 3px"}}>Nuevo PIN (4 dígitos)</p>
+                    <input inputMode="numeric" maxLength={4} value={newAdmPin}
+                      onChange={e=>setNewAdmPin(e.target.value.replace(/\D/g,"").slice(0,4))}
+                      placeholder="• • • •"
+                      style={{...IN,fontSize:13,padding:"7px 10px",textAlign:"center",letterSpacing:6,WebkitTextSecurity:"disc"}}/>
+                  </div>
+                  <div>
+                    <p style={{color:"#6b7280",fontSize:10,margin:"0 0 3px"}}>Repetí el PIN</p>
+                    <input inputMode="numeric" maxLength={4} value={newAdmPin2}
+                      onChange={e=>setNewAdmPin2(e.target.value.replace(/\D/g,"").slice(0,4))}
+                      placeholder="• • • •"
+                      style={{...IN,fontSize:13,padding:"7px 10px",textAlign:"center",letterSpacing:6,WebkitTextSecurity:"disc"}}/>
+                  </div>
+                  <div style={{display:"flex",gap:7}}>
+                    <Btn sm v="g" ch="Guardar" onClick={async()=>{
+                      if(newAdmPin.length!==4)return flash("Debe tener 4 dígitos");
+                      if(newAdmPin!==newAdmPin2)return flash("Los PINs no coinciden");
+                      const cfg=await ST.get("Config")||{};
+                      const newCfg={...cfg,adminPin:newAdmPin};
+                      await ST.set("Config",newCfg);
+                      setAdminPin(newAdmPin);
+                      setShowChAdmPin(false);setNewAdmPin("");setNewAdmPin2("");
+                      flash("PIN de admin actualizado 🔑");
+                    }}/>
+                    <Btn sm v="s" ch="Cancelar" onClick={()=>{setShowChAdmPin(false);setNewAdmPin("");setNewAdmPin2("");}}/>
+                  </div>
+                </div>
+              </div>
+            ):(
+              <button onClick={()=>setShowChAdmPin(true)} style={{...BK,color:"#f0b429",marginBottom:10,textAlign:"left"}}>🔑 Cambiar PIN de administrador</button>
             )}
             <p style={{color:"#6b7280",fontSize:11,marginBottom:8}}>{Object.keys(users).length} jugador(es)</p>
             <div style={{display:"flex",flexDirection:"column",gap:7}}>
