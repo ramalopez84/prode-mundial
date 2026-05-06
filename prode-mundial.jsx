@@ -90,11 +90,15 @@ function parseSheetData(hoja, rows) {
     const obj = {};
     data.forEach(r => {
       if(!r[0]) return;
-      // Preservar tipo: booleanos como bool, resto como string
       if(r[1]==="true"||r[1]===true) obj[r[0]]=true;
       else if(r[1]==="false"||r[1]===false) obj[r[0]]=false;
       else obj[r[0]]=String(r[1]);
     });
+    return Object.keys(obj).length ? obj : null;
+  }
+  if (hoja === "Sesiones") {
+    const obj = {};
+    data.forEach(r => { if(r[0]) obj[String(r[0])]=String(r[1]); });
     return Object.keys(obj).length ? obj : null;
   }
   return null;
@@ -132,6 +136,11 @@ function serializeToRows(hoja, v) {
   }
   if (hoja === "Config") {
     const rows = [["clave","valor"]];
+    Object.entries(v||{}).forEach(([k,val])=>rows.push([k,String(val)]));
+    return rows;
+  }
+  if (hoja === "Sesiones") {
+    const rows = [["nombre","token"]];
     Object.entries(v||{}).forEach(([k,val])=>rows.push([k,String(val)]));
     return rows;
   }
@@ -439,6 +448,7 @@ export default function App(){
   const [lcl,setLcl]=useState({});
   const [busy,setBusy]=useState(false);
   const [inscCerradas,setInscCerradas]=useState(false);
+  const [sessionToken,setSessionToken]=useState(null);
   const [adminPin,setAdminPin]=useState("2026");
   const [showChAdmPin,setShowChAdmPin]=useState(false);
   const [newAdmPin,setNewAdmPin]=useState("");
@@ -464,6 +474,14 @@ export default function App(){
   },[]);
 
   const flash=t=>{setMsg(t);setTimeout(()=>setMsg(""),3000);};
+  const mkToken=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const setSessionAndGo=async(u,preds)=>{
+    // Generar token único, guardarlo en Sheets en Sesiones
+    const tok=mkToken();
+    setSessionToken(tok);
+    await ST.set("Sesiones",{...(await ST.get("Sesiones")||{}),[u.name]:tok});
+    setUser(u);setLp(preds[u.name]||{});setSc("prode");
+  };
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
@@ -505,10 +523,8 @@ export default function App(){
       const nu={...latest,[n]:{name:n,pin:"2026",first:false,ts:Date.now()}};
       await ST.set("Usuarios",nu);
       setUsers(nu);
-      setUser(nu[n]);
       const p=await ST.get("Pronosticos")||{};
-      setLp(p[n]||{});
-      setSc("prode");
+      await setSessionAndGo(nu[n],p);
     }
   };
   const doPin=async()=>{
@@ -516,8 +532,8 @@ export default function App(){
     const latest=await ST.get("Usuarios")||{};
     const u=latest[fN.trim()];
     if(!u||fP!==u.pin)return setFErr("PIN incorrecto");
-    setUser(u);const p=await ST.get("Pronosticos")||{};setLp(p[u.name]||{});
-    setSc("prode");
+    const p=await ST.get("Pronosticos")||{};
+    await setSessionAndGo(u,p);
   };
   const doChPin=async()=>{
     setFErr("");
@@ -533,6 +549,14 @@ export default function App(){
 
   const savePreds=async()=>{
     setBusy(true);
+    // Verificar que la sesión sigue siendo válida
+    const sesiones=await ST.get("Sesiones")||{};
+    if(sessionToken && sesiones[user.name] && sesiones[user.name]!==sessionToken){
+      flash("⚠️ Tu sesión fue iniciada en otro dispositivo. Volvé a ingresar.");
+      setBusy(false);
+      setTimeout(()=>{setUser(null);setSessionToken(null);setSc("splash");},2000);
+      return;
+    }
     const latest=await ST.get("Pronosticos")||{};
     const np={...latest,[user.name]:lp};
     await ST.set("Pronosticos",np);setPreds(np);flash("¡Guardado! 🎉");setBusy(false);
