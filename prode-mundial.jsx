@@ -640,20 +640,23 @@ export default function App(){
   );
 
   if(sc==="changePin"&&user)return(
-    <PW maxW={320} center>
-      <div style={{textAlign:"center",fontSize:30,marginBottom:8}}>🔐</div>
-      <h2 style={{color:"#fff",fontWeight:900,fontSize:17,textAlign:"center",marginBottom:14}}>Cambiar PIN</h2>
-      <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        <div><p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Nuevo PIN</p>
-          <input inputMode="numeric" maxLength={4} autoFocus value={fP2}
+    <div style={{...W,flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px",minHeight:"100dvh"}}>
+      <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:9}}>
+        <div style={{textAlign:"center",fontSize:30,marginBottom:4}}>🔐</div>
+        <h2 style={{color:"#fff",fontWeight:900,fontSize:17,textAlign:"center",margin:"0 0 10px"}}>Cambiar PIN</h2>
+        <div>
+          <p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Nuevo PIN</p>
+          <input inputMode="numeric" maxLength={4} value={fP2}
             onChange={e=>setFP2(e.target.value.replace(/\D/g,"").slice(0,4))}
             placeholder="• • • •"
             style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6,WebkitTextSecurity:"disc"}}/>
         </div>
-        <div><p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Repetí el PIN</p>
+        <div>
+          <p style={{color:"#6b7280",fontSize:11,margin:"0 0 3px"}}>Repetí el PIN</p>
           <input inputMode="numeric" maxLength={4} value={fP3}
             onChange={e=>setFP3(e.target.value.replace(/\D/g,"").slice(0,4))}
             onKeyDown={e=>e.key==="Enter"&&doChPin()}
+            onFocus={e=>{setTimeout(()=>e.target.scrollIntoView({behavior:"smooth",block:"center"}),100);}}
             placeholder="• • • •"
             style={{...IN,textAlign:"center",fontSize:18,letterSpacing:6,WebkitTextSecurity:"disc"}}/>
         </div>
@@ -661,7 +664,8 @@ export default function App(){
         <Btn v="g" onClick={doChPin} ch="Guardar PIN →" disabled={fP2.length<4||fP3.length<4}/>
         <button onClick={()=>setSc("prode")} style={{...BK,marginBottom:0,textAlign:"center"}}>Cancelar</button>
       </div>
-    </PW>
+      {CR}
+    </div>
   );
 
   if(sc==="prode"&&user){
