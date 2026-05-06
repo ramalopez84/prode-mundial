@@ -88,7 +88,13 @@ function parseSheetData(hoja, rows) {
   }
   if (hoja === "Config") {
     const obj = {};
-    data.forEach(r => { if(r[0])obj[r[0]]=r[1]==="true"||r[1]===true; });
+    data.forEach(r => {
+      if(!r[0]) return;
+      // Preservar tipo: booleanos como bool, resto como string
+      if(r[1]==="true"||r[1]===true) obj[r[0]]=true;
+      else if(r[1]==="false"||r[1]===false) obj[r[0]]=false;
+      else obj[r[0]]=String(r[1]);
+    });
     return Object.keys(obj).length ? obj : null;
   }
   return null;
