@@ -479,7 +479,11 @@ export default function App(){
   // En desktop, scroll abajo cuando termina de cargar (loading=false)
   useEffect(()=>{
     if(sc==="splash" && !loading && window.innerWidth > 600){
-      setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"instant"}),80);
+      setTimeout(()=>{
+        const root = document.getElementById("root");
+        if(root) root.scrollTop = root.scrollHeight;
+        else window.scrollTo({top:document.body.scrollHeight,behavior:"instant"});
+      },80);
     }
   },[sc, loading]);
   useEffect(()=>{if(user)setLp(preds[user.name]||{});},[user?.name]);
