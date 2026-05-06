@@ -771,8 +771,18 @@ export default function App(){
           <h2 style={{color:"#fff",fontWeight:900,fontSize:17,marginBottom:4}}>¿Sos vos, Bachi? 🤨</h2>
           <p style={{color:"#6b7280",fontSize:12,marginBottom:14}}>Demostralo con el PIN secreto…</p>
           <div style={{display:"flex",flexDirection:"column",gap:9}}>
-            <input type="password" inputMode="numeric" maxLength={4} autoFocus value={fAdm} onChange={e=>setFAdm(e.target.value.replace(/\D/g,"").slice(0,4))} onKeyDown={e=>{if(e.key==="Enter"){if(fAdm===adminPin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}}} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:22,letterSpacing:8}}/>
-            <Btn onClick={()=>{if(fAdm===adminPin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");}} ch="Soy yo, dejame entrar 🚪" disabled={fAdm.length<4}/>
+            <input type="password" inputMode="numeric" maxLength={4} autoFocus value={fAdm} onChange={e=>setFAdm(e.target.value.replace(/\D/g,"").slice(0,4))} onKeyDown={e=>{if(e.key==="Enter"){(async()=>{
+              const cfg=await ST.get("Config")||{};
+              const pin=cfg.adminPin||"2026";
+              setAdminPin(pin);
+              if(fAdm===pin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");
+            })();}}} placeholder="• • • •" style={{...IN,textAlign:"center",fontSize:22,letterSpacing:8}}/>
+            <Btn onClick={()=>{(async()=>{
+              const cfg=await ST.get("Config")||{};
+              const pin=cfg.adminPin||"2026";
+              setAdminPin(pin);
+              if(fAdm===pin){setIsAdm(true);setSc("admin");}else flash("¡Impostor! 😤");
+            })();}} ch="Soy yo, dejame entrar 🚪" disabled={fAdm.length<4}/>
           </div>
           {msg&&<p style={{color:"#ef4444",marginTop:10,fontSize:13}}>{msg}</p>}
         </div>
