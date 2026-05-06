@@ -618,7 +618,12 @@ export default function App(){
         <div style={{marginTop:12}}>
           <p style={{color:"#6b7280",fontSize:11,marginBottom:5}}>Ya están jugando:</p>
           <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-            {Object.keys(users).map(n=><span key={n} onClick={()=>setFN(n)} style={{background:"rgba(255,255,255,0.07)",borderRadius:20,padding:"3px 10px",fontSize:12,color:"#9ca3af",cursor:"pointer"}}>{n}</span>)}
+            {Object.keys(users).map(n=>(
+              <span key={n} onClick={()=>{setFN(n);setFP("");setFErr("");setSc("pin");}}
+                style={{background:"rgba(255,255,255,0.07)",borderRadius:20,padding:"5px 12px",fontSize:12,color:"#e5e7eb",cursor:"pointer",border:"1px solid rgba(255,255,255,0.12)"}}>
+                {n}
+              </span>
+            ))}
           </div>
         </div>
       )}
@@ -724,7 +729,10 @@ export default function App(){
   if(sc==="tabla")return(
     <div style={{...W,alignItems:"flex-start",flexDirection:"column",padding:0}}>
       <div style={{width:"100%",maxWidth:500,padding:"14px 12px 0",margin:"0 auto",flex:1,boxSizing:"border-box"}}>
-        <button style={BK} onClick={()=>setSc("splash")}>← Inicio</button>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <button style={BK} onClick={()=>{setUser(null);setSc("splash");}} >{user?"← Salir":"← Inicio"}</button>
+          {user&&<button style={{...BK,color:K.gold,marginBottom:0}} onClick={()=>setSc("prode")}>Mis pronósticos →</button>}
+        </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
           <h2 style={{color:"#fff",fontWeight:900,fontSize:20,margin:0}}>🏆 Tabla</h2>
           <span style={{color:"#6b7280",fontSize:10}}>{jugados}/{ALL.length} jugados</span>
