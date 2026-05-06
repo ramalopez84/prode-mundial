@@ -12,9 +12,15 @@
       html, body {
         margin: 0;
         padding: 0;
-        padding-top: env(safe-area-inset-top, 0px);
         background: #06091a;
         overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* iOS PWA: cubrir toda la pantalla */
+      @supports (-webkit-touch-callout: none) {
+        html, body, #root {
+          height: -webkit-fill-available;
+        }
       }
       #root {
         margin: 0;

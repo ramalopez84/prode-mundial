@@ -349,7 +349,7 @@ const cR=(a,b)=>{const x=parseInt(a),y=parseInt(b);if(isNaN(x)||isNaN(y))return 
 const cPts=(p,r)=>{if(!p||!r||r.l===""||r.l===undefined)return 0;const a=cR(p.l,p.v),b=cR(r.l,r.v);if(!a||!b)return 0;if(String(p.l)===String(r.l)&&String(p.v)===String(r.v))return 3;if(a===b)return 1;return 0;};
 
 const K={bg:"#06091a",gold:"#f0b429",gn:"#22c55e",rd:"#ef4444",mu:"#6b7280",tx:"#e5e7eb",di:"#9ca3af",bo:"rgba(255,255,255,0.09)",ca:"rgba(255,255,255,0.05)"};
-const W={minHeight:"100vh",display:"flex",justifyContent:"center",background:K.bg,fontFamily:"'Trebuchet MS','Segoe UI',sans-serif"};
+const W={minHeight:"100vh",minHeight:"100dvh",display:"flex",justifyContent:"center",background:K.bg,fontFamily:"'Trebuchet MS','Segoe UI',sans-serif"};
 const BK={background:"none",border:"none",color:K.mu,cursor:"pointer",fontSize:13,padding:0,marginBottom:10,fontFamily:"inherit"};
 const IN={background:"rgba(255,255,255,0.07)",border:`1px solid ${K.bo}`,borderRadius:8,color:"#fff",padding:"10px 13px",fontSize:15,outline:"none",width:"100%",boxSizing:"border-box",fontFamily:"inherit"};
 const SC={width:36,textAlign:"center",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:7,color:"#fff",padding:"6px 2px",fontSize:14,fontWeight:700,outline:"none",fontFamily:"inherit"};
@@ -579,21 +579,20 @@ export default function App(){
   const myComp=user?ALL.filter(p=>{const pr=lp[p.id];return pr?.l!==undefined&&pr?.l!==""&&pr?.v!==undefined&&pr?.v!=="";}).length:0;
   const otherNames=user?Object.keys(preds).filter(n=>n!==user.name):[];
 
-  const PW=({children,maxW=500,center=false})=>(
+  const PW=({children,maxW=500})=>(
     <div style={{...W,alignItems:"flex-start",flexDirection:"column",padding:0}}>
-      <div style={{width:"100%",maxWidth:maxW,padding:"14px 12px 0",flex:1,margin:"0 auto",boxSizing:"border-box"}}>{children}</div>
+      <div style={{width:"100%",maxWidth:maxW,padding:"calc(14px + env(safe-area-inset-top,0px)) 12px 0",margin:"0 auto",boxSizing:"border-box"}}>{children}</div>
       {CR}
     </div>
   );
 
   if(sc==="splash")return(
-    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0,margin:0,minHeight:"100dvh"}}>
-      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0,margin:0,padding:0,lineHeight:0,
-        marginTop:"env(safe-area-inset-top,0px)" }}>
-        <img src={`data:image/jpeg;base64,${PROMO_B64}`} alt="" style={{width:"100%",objectFit:"cover",objectPosition:"center top",display:"block",maxHeight:"65vh",verticalAlign:"top"}}/>
+    <div style={{...W,alignItems:"stretch",flexDirection:"column",padding:0,margin:0}}>
+      <div style={{position:"relative",overflow:"hidden",width:"100%",flexShrink:0,margin:0,padding:0,lineHeight:0}}>
+        <img src={`data:image/jpeg;base64,${PROMO_B64}`} alt="" style={{width:"100%",objectFit:"cover",objectPosition:"center top",display:"block",maxHeight:"60vh",verticalAlign:"top"}}/>
         <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(6,9,26,0) 35%,rgba(6,9,26,1) 100%)"}}/>
       </div>
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"0 20px",marginTop:-70,zIndex:2,width:"100%",maxWidth:420,margin:"-70px auto 0",boxSizing:"border-box"}}>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"0 20px",zIndex:2,width:"100%",maxWidth:420,margin:"-70px auto 0",boxSizing:"border-box"}}>
         <img src={`data:image/webp;base64,${LOGO_B64}`} alt="Bachi Prode 2026"
           style={{width:"min(260px,72vw)",filter:"drop-shadow(0 3px 18px rgba(0,0,0,0.75))"}}/>
         <p style={{color:"#9ca3af",fontSize:11,margin:"6px 0 1px",textAlign:"center"}}>🇺🇸 🇲🇽 🇨🇦 · 11 Jun – 19 Jul 2026</p>
@@ -651,7 +650,7 @@ export default function App(){
   );
 
   if(sc==="changePin"&&user)return(
-    <div style={{...W,flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px",minHeight:"100dvh"}}>
+    <div style={{...W,flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"env(safe-area-inset-top,0px) 20px 0",minHeight:"100dvh"}}>
       <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:9}}>
         <div style={{textAlign:"center",fontSize:30,marginBottom:4}}>🔐</div>
         <h2 style={{color:"#fff",fontWeight:900,fontSize:17,textAlign:"center",margin:"0 0 10px"}}>Cambiar PIN</h2>
@@ -683,7 +682,7 @@ export default function App(){
     const isP=tab==="Playoff";
     return(
       <div style={{...W,alignItems:"flex-start",flexDirection:"column",padding:0}}>
-        <div style={{width:"100%",maxWidth:500,padding:"14px 12px 0",margin:"0 auto",flex:1,boxSizing:"border-box"}}>
+        <div style={{width:"100%",maxWidth:500,padding:"calc(14px + env(safe-area-inset-top, 0px)) 12px 0",margin:"0 auto",flex:1,boxSizing:"border-box"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
             <button style={BK} onClick={()=>setSc("splash")}>← Salir</button>
             <div style={{display:"flex",gap:7,alignItems:"center"}}>
@@ -769,7 +768,7 @@ export default function App(){
   );
 
   if(sc==="adminAuth")return(
-    <div style={{...W,alignItems:"center",flexDirection:"column",padding:"0 20px"}}>
+    <div style={{...W,alignItems:"center",flexDirection:"column",padding:"env(safe-area-inset-top,20px) 20px 0"}}>
       <div style={{width:"100%",maxWidth:290}}>
         <button style={BK} onClick={()=>setSc("splash")}>← Volver</button>
         <div style={{textAlign:"center"}}>
@@ -799,7 +798,7 @@ export default function App(){
 
   if(sc==="admin"&&isAdm)return(
     <div style={{...W,alignItems:"flex-start",flexDirection:"column",padding:0}}>
-      <div style={{width:"100%",maxWidth:520,padding:"14px 12px 0",margin:"0 auto",flex:1,boxSizing:"border-box"}}>
+      <div style={{width:"100%",maxWidth:520,padding:"calc(14px + env(safe-area-inset-top,0px)) 12px 0",margin:"0 auto",flex:1,boxSizing:"border-box"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
           <button style={BK} onClick={()=>{setIsAdm(false);setSc("splash");}}>← Salir</button>
           <span style={{fontSize:10,fontWeight:700,color:"#ef4444",background:"#ef444422",padding:"2px 8px",borderRadius:10}}>⚙️ ADMIN</span>
