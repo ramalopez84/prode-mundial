@@ -375,7 +375,7 @@ const SALUDOS=[
   n=>`¡Hola ${n}! ¡Dale que sos vos! 🥹`,
   n=>`Nunca dije nada, pero si necesitás ayuda estoy... 🤫`,
 ];
-const isLk=dt=>Date.now()>=new Date(dt).getTime()-300000;
+const isLk=dt=>Date.now()>=new Date(dt).getTime()-400000;
 const fmt=iso=>{try{return new Date(iso).toLocaleString("es-AR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/Argentina/Buenos_Aires"});}catch(e){return "";}};
 const cR=(a,b)=>{const x=parseInt(a),y=parseInt(b);if(isNaN(x)||isNaN(y))return null;return x>y?"L":x<y?"V":"E";};
 const cPts=(p,r)=>{if(!p||!r||r.l===""||r.l===undefined)return 0;const a=cR(p.l,p.v),b=cR(r.l,r.v);if(!a||!b)return 0;if(String(p.l)===String(r.l)&&String(p.v)===String(r.v))return 3;if(a===b)return 1;return 0;};
