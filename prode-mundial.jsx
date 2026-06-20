@@ -227,7 +227,7 @@ const PG=[
   [31,"F","Países Bajos","Japón","2026-06-14T20:00Z","AT&T Stadium","Dallas"],
   [32,"F","Suecia","Túnez","2026-06-15T02:00Z","Estadio BBVA","Monterrey"],
   [33,"F","Países Bajos","Suecia","2026-06-20T17:00Z","NRG Stadium","Houston"],
-  [34,"F","Túnez","Japón","2026-06-20T04:00Z","Estadio BBVA","Monterrey"],
+  [34,"F","Túnez","Japón","2026-06-21T04:00Z","Estadio BBVA","Monterrey"],
   [35,"F","Japón","Suecia","2026-06-25T23:00Z","AT&T Stadium","Dallas"],
   [36,"F","Túnez","Países Bajos","2026-06-25T23:00Z","Arrowhead Stadium","Kansas City"],
   [37,"G","Bélgica","Egipto","2026-06-15T19:00Z","Lumen Field","Seattle"],
