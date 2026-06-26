@@ -271,8 +271,8 @@ const PG=[
 const PO=[
   [1001,"R32","M73","2°A","2°B","2026-06-28T19:00Z","SoFi Stadium","Los Ángeles"],
   [1002,”R32","M74","1°E","Mej.3°","2026-06-29T20:30Z","Gillette Stadium","Boston"],
-  [1003,”R32","M76","1°C","2°F","2026-06-29T17:00Z","NRG Stadium","Houston"],
-  [1004,”R32","M75","1°F","2°C","2026-06-30T01:00Z","Estadio BBVA","Monterrey"],
+  [1003,”R32","M75","1°F","2°C","2026-06-30T01:00Z","Estadio BBVA","Monterrey"],
+  [1004,”R32","M76","1°C","2°F","2026-06-29T17:00Z","NRG Stadium","Houston"],
   [1005,”R32","M77","1°I","Mej.3°","2026-06-30T21:00Z","MetLife Stadium","Nueva York/NJ"],
   [1006,”R32","M78","2°E","2°I","2026-06-30T17:00Z","AT&T Stadium","Dallas"],
   [1007,"R32","M79","1°A","Mej.3°","2026-07-01T01:00Z","Estadio Azteca","Ciudad de México"],
